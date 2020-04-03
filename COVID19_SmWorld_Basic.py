@@ -17,15 +17,15 @@ class COVID_19_Basic():
     
     def __init__(self):
         
-        p=0.006 #Probability of rewiring each edge
-        self.k=16 #Number of closest neighbours per node
-        self.n=10000 #Number of nodes in the small world graph to begin with
+        p=0.008 #Probability of rewiring each edge
+        self.k=8 #Number of closest neighbours per node
+        self.n=50 #Number of nodes in the small world graph to begin with
         self.SmWorldGr= nex.watts_strogatz_graph(self.n, self.k, p)
         #Created Small World Graph.
         #self.attributes()
         self.rates() #Assigns various transmission and clinical rates to patients.
         
-        self.time= 300 #Stores the number of days for which the simulation is carried out.
+        self.time= 60 #Stores the number of days for which the simulation is carried out.
         
         self.sus_size=[]
         self.exp_size=[]
@@ -82,7 +82,7 @@ class COVID_19_Basic():
         '''Updation from susceptible to exposed'''
         self.susceptible_updater(t)
         
-        self.stat_gen()         #Compiling data for statistics'''
+        self.stat_gen(t)         #Compiling data for statistics'''
         
         
     def exposed_updater(self,t):
@@ -121,10 +121,10 @@ class COVID_19_Basic():
                 tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')
                 t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')
                 
-                if(typo[n]=='A'):
+                '''if(typo[n]=='A'):
                     print(" Asymptomatic Stoad\t:%d" %(t_typo[n][0]))
                     print(" Asymptomatic Time Transition\t:%d\t%f" %(t_trans[n]))
-                    print(" Asymptomatic Transition\t:%s %s" %(tstate[n], n))
+                    print(" Asymptomatic Transition\t:%s %s" %(tstate[n], n))'''
                 
     def susceptible_updater(self, t):
         
@@ -148,15 +148,26 @@ class COVID_19_Basic():
             
             
             p=self.p
+            if( typo[n]== 'S' or typo[n]== 'NS'):
+                p=2*self.p
+                '''ASSUMPTION: SEVERE CASES ARE TWICE AS CONTAGIOUS'''
+                if(typo[n]== 'S'):
+                    print("Hey Jude")
+            
             if( typo[n]=='H'):
-                p=0.33*self.p
-                '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN HOSPITALISED, TRANSMISSION RATE DROPS TO 33% 
+                p=0.5*p
+                '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN HOSPITALISED, TRANSMISSION RATE DROPS TO 25% 
                 of it's value'''
+                print("The Great Game")
                 
             elif( typo[n]=='QS' or typo[n]=='QNS'):
-                p=0.5*self.p
-                '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN HOSPITALISED, TRANSMISSION RATE DROPS TO 50% 
+                #p=1*p
+                '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN IN QUARANTINE, TRANSMISSION RATE DROPS TO 50% 
                 of it's value'''
+                print("The Absurd Show")
+                if typo[n]=='QS':
+                    print("Come Together")
+                
             
                 
             for r in self.SmWorldGr.neighbors(n):
@@ -185,7 +196,7 @@ class COVID_19_Basic():
                         
                         '''Choosing whether the exposed will go on to develop severe, non-severe, or asymptomatic cases'''
                         
-                        if( ch1<=self.p_asymp):        #Individual is classified as aymptomatic
+                        if( ch1<=self.p_asymp):        #Individual is classified as aymptomatic/mild
                             self.SmWorldGr.nodes[r]['type']= 'A'
                             self.asymp.append(r)
                 
@@ -195,8 +206,21 @@ class COVID_19_Basic():
                             self.sev.append(r)
                         else:
                             self.SmWorldGr.nodes[r]['type']= 'NS'
+                            
+                            
                             self.nonsev.append(r)
-                            print("SOja")
+                            
+                            ch2=ran.random()
+                            if( ch2 <= self.p_ns_s):
+                                #NS case will go on to become severe later.
+                                self.nonsevcrt.append(r)
+                                self.SmWorldGr.nodes[r]['t_type']=(t,ch2, ran.random())
+                            
+                                '''Third value in tuple is assigned only to NS cases that will turn to S and used to determine when these individuals 
+                                will end up in a 'S' case'''
+                            
+                            
+                            print("Soja")
                         
             
         
@@ -238,10 +262,43 @@ class COVID_19_Basic():
                         print(" Asymptomatic Stoad\t:%d" %(t_typo[n][0]))
                         print(" Asymptomatic Time Transition\t:%d\t%f" %(t_trans[n]))
                         print(" Asymptomatic Transition\t:%s %s" %(tstate[n], n))
+                    elif(typo[n]=='NS'):
+                        print(" Non Sev Stoad\t:%d" %(t_typo[n][0]))
+                        print(" Non Sev Time Transition\t:%d\t%f" %(t_trans[n]))
+                        print(" Non Sev Transition\t:%s %s" %(tstate[n], n))
+                    elif(typo[n]=='S'):
+                        print(" Severe Stoad\t:%d" %(t_typo[n][0]))
+                        print(" Severe Time Transition\t:%d\t%f" %(t_trans[n]))
+                        print(" Severe Transition\t:%s %s" %(tstate[n], n))
+                        
+                        
+                        
+        '''Checking if NS persons slated to turn critical get moved up to QS or S, dependinng on circumstances'''
         
-        t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')            
-        
+        for n in self.nonsevcrt:
+            ch=t_typo[n][2]
+            if (ch> math.exp(-self.conversion*(t-t_SEIR[n][0]))):
+                # Takes a median of 5.0 days for a non-severe case to turn severe.
+                
+                if( typo[n]== 'NS'):
+                    # Person hasn't been diagnosed yet.
+                    self.SmWorldGr.nodes[n]['type']='S'
                     
+                elif (typo[n]==  'QNS'):
+                    #Person was diagnosed and was in self-isolation when it turned  severe.
+                    self.SmWorldGr.nodes[n]['type']='QS'
+                    self.qnonsev.remove(n)      # Removed from list of quarantined non-severe persons.
+                    self.qsev.append(n)         #Added to list of quarantined severe persons.
+                
+                self.SmWorldGr.nodes[n]['t_type']= (t, ran.random())
+                self.sev.append(n)      #Person added to list of severe cases.
+                self.nonsev.remove(n)
+                self.nonsevcrt.remove(n)
+                
+        
+        typo=nex.get_node_attributes(self.SmWorldGr, 'type')
+        t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')             
+            
         '''Checking if a particular infectious has gotten back positive diagnostic for COVID-19
         & is hospitalised/quarantined as the case may be'''
         
@@ -255,7 +312,7 @@ class COVID_19_Basic():
                     if(typo[n]== "S"):
                         #Person has a severe case
                         if (len(self.hosp)< self.hospbeds):
-                            '''ONLY NEWLY DIAGNOSED SEVERE CASES ARE OFFERED HOSPITAL BEDS, IF ANY'''
+                            '''NEWLY DIAGNOSED SEVERE CASES ARE OFFERED HOSPITAL BEDS, IF ANY ARE AVALIABLE'''
                             self.SmWorldGr.nodes[n]['type']= 'H'
                             self.hosp.append(n)
                         else:
@@ -270,16 +327,28 @@ class COVID_19_Basic():
                         # Less severe cases to self-quarantine.
                         self.SmWorldGr.nodes[n]['type']= 'QNS'
                         self.qnonsev.append(n)
-                        
                         self.SmWorldGr.nodes[n]['t_type']= (t, ran.random())
-                        #Time at which patient is diagnosed.
+                        
+                        if (len(t_typo[n])==3):
+                            # If these NS individuals are slated to go rogue.
+                            ch2=t_typo[n][2]
+                            self.SmWorldGr.nodes[n]['t_type']= (t, ran.random(), ch2)
+                        
+                        #ch1=ran.random() ; ch2=ran.random()
+                        
+                            
+                        
         
         typo=nex.get_node_attributes(self.SmWorldGr, 'type')
-        t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')                
+        t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type') 
+
         
-                        
+        t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')
+        tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')  
+        
+        
         '''Checking if non-severe quarantined (QNS) persons have recovered.
-        N.B: We don't accont for death in non-severe cases, not yet.'''
+        '''
         
         
         
@@ -289,7 +358,11 @@ class COVID_19_Basic():
             ch=t_typo[n][1]
             if( ch> math.exp(-self.recoverymild*(t- t_SEIR[n][0]))):
                 #Takes a mean of fourteen days from the onset of the symptoms for a person to recover.
-                
+                if(len(t_typo[n])==3):
+                    # If these NS individuals are slated to go rogue. but have somehow reached the end of their convalescence.
+                    print("Deitrus")
+                    continue
+
                 #Recovered patient can no longer be transmitting/non-transmitting
                 if(tstate[n]== 'T'):
                     self.SmWorldGr.nodes[n]['t_trans']= (t,0)
@@ -308,7 +381,10 @@ class COVID_19_Basic():
                 self.qnonsev.remove(n)
                 self.nonsev.remove(n)
                 self.infektion.remove(n)
+        
                 
+        
+        
         '''Now accounting for severe cases'''
         
         t_SEIR=nex.get_node_attributes(self.SmWorldGr, 't_SEIR') #Time at wich node last updated it's SEIR value.
@@ -317,6 +393,7 @@ class COVID_19_Basic():
         tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')
         typo=nex.get_node_attributes(self.SmWorldGr, 'type')
         t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
+        
                 
         for n in self.sev:
             
@@ -395,6 +472,10 @@ class COVID_19_Basic():
                     self.sev.remove(n)          # No longer a severe case
                     self.infektion.remove(n)    # No longer infected.
                     
+                    
+        
+        
+                    
         ''' Asymptomatic cases to be dealt with finally. N.B. Again we don't consider to be capable of transmission.'''
         
         t_SEIR=nex.get_node_attributes(self.SmWorldGr, 't_SEIR') #Time at wich node last updated it's SEIR value.
@@ -434,7 +515,7 @@ class COVID_19_Basic():
                 
                 self.SmWorldGr.nodes[n]['type']= ''
                 self.SmWorldGr.nodes[n]['state']='R'
-                self.SmWorldGr.nodes[n]['tstate']=(t,0)
+                self.SmWorldGr.nodes[n]['t_SEIR']=(t,0)
                 self.SmWorldGr.nodes[n]['t_type']= (t, 0)
                 #Time at which patient recovered.
                 
@@ -443,7 +524,7 @@ class COVID_19_Basic():
                 self.infektion.remove(n)
                 
                 
-    def stat_gen(self):
+    def stat_gen(self, t):
         
         self.sus_size.append(len(self.susceptible))
         self.exp_size.append(len(self.exposed))
@@ -466,6 +547,85 @@ class COVID_19_Basic():
         print("Number of severe cases:\t%d" %(len(self.sev)))
         print("Number of severe quarantined cases:\t%d" %(len(self.qsev)))
         
+        self.ouputgraph(t)
+        
+        
+    def ouputgraph(self, t):
+        
+        self.SmWorldGrCopy= copy.deepcopy(self.SmWorldGr)
+        
+        t_SEIR=nex.get_node_attributes(self.SmWorldGrCopy, 't_SEIR')
+        t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')
+        t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
+        
+        print(t_SEIR)
+        
+        for (key, val) in t_SEIR.items():
+            self.SmWorldGrCopy.nodes[key]['t_SEIR']= val[0]
+        for (key, val) in t_trans.items():
+            self.SmWorldGrCopy.nodes[key]['t_trans']= val[0]
+        for (key, val) in t_typo.items():
+            self.SmWorldGrCopy.nodes[key]['t_type']= val[0]
+            
+        
+        
+        if(os.path.isdir("Results")==False):
+            os.mkdir("Results")
+        os.chdir("Results")
+        #Changing directory
+
+        if(os.path.isdir("Basic")==False):
+            os.mkdir("Basic")
+        os.chdir("Basic")
+        #Changing directory
+
+        if(os.path.isdir("Trial III")==False):
+            os.mkdir("Trial III")
+        os.chdir("Trial III")
+        
+        #Log making
+        
+        if(os.path.isdir("Graph Data")==False):
+            os.mkdir("Graph Data")
+        os.chdir("Graph Data")
+        
+        t_SEIR=nex.get_node_attributes(self.SmWorldGrCopy, 't_SEIR')
+        print("t_SEIR:\n\n")
+        print(t_SEIR)
+        
+        t_typo=nex.get_node_attributes(self.SmWorldGrCopy, 't_type')
+        print("\nt_typo:\n")
+        print(t_typo)
+        
+        t_trans=nex.get_node_attributes(self.SmWorldGrCopy, 't_trans')
+        print("\nt_trans:\n")
+        print(t_trans)
+        
+        state=nex.get_node_attributes(self.SmWorldGrCopy, 'state')
+        print("\nState:\n")
+        print(state)
+        
+        typo=nex.get_node_attributes(self.SmWorldGrCopy, 'type')
+        print("\nType:\n")
+        print(typo)
+        
+        tstate=nex.get_node_attributes(self.SmWorldGrCopy, 'transtate')
+        print("\nTransmission State:\n")
+        print(tstate)
+        
+        print('\nEverything:\n')
+        print(self.SmWorldGrCopy.nodes(data=True))
+        print('\nEverything:\n')
+        #print(self.SmWorldGr.nodes(data="True"))
+        
+        print("Time:\t%d" %(t))
+        
+        nex.write_graphml(self.SmWorldGrCopy, '%d_Annotated.graphml' %(t))
+        
+        os.chdir("../../../../")
+        
+        
+        
     def statistics(self):
         
         sus_size=np.array(self.sus_size)
@@ -484,10 +644,15 @@ class COVID_19_Basic():
             os.mkdir("Results")
         os.chdir("Results")
         #Changing directory
+        
+        if(os.path.isdir("Basic")==False):
+            os.mkdir("Basic")
+        os.chdir("Basic")
+        #Changing directory
 
-        if(os.path.isdir("Trial IV")==False):
-            os.mkdir("Trial IV")
-        os.chdir("Trial IV")
+        if(os.path.isdir("Trial III")==False):
+            os.mkdir("Trial III")
+        os.chdir("Trial III")
         
         #Log making
         
@@ -515,6 +680,10 @@ class COVID_19_Basic():
         
         hd_txt= "Time, 1: Suscep Indv, 2: No. Exp Indv, 3: No. Inf Indv, 4: No. Cont Indv, 5: No. Rec Indv, 6: No. Dead Indv, 7: Sev Cases, 8: Hosp Cases, 9:Q Sev Cases, 10: QNS Cases " 
         np.savetxt('Pandemic.csv', self.data, delimiter=",", header=hd_txt,comments="#")
+                   
+        f=open('log_unabridged.txt','w')
+        f.write(" K:\t%d, N:\t%d, Initial Caseload:\t %d, R0:\t%3.2f, p:\t %5.3f" %(self.k, self.n, self.int_caseload, self.R0, self.p))
+        
                    
         os.chdir("../")
         
@@ -568,7 +737,7 @@ class COVID_19_Basic():
         
         
         Based on severity of the disease we have a third classification system (applies for "E" & "I" nodes):
-        "A"- Asymptomatic, "NS"- Non-severe, "S"- Severe, "H"- Hospitalised (Severe Cases), "QS"- Self-Quarantined (Severe Cases), 
+        "A"- Asymptomatic/Mild, "NS"- Non-severe (Moderate), "S"- Severe, "H"- Hospitalised (Severe Cases), "QS"- Self-Quarantined (Severe Cases), 
         "QNS"- Self-Quarantined (Non-Severe Cases)
         '''
         
@@ -642,9 +811,11 @@ class COVID_19_Basic():
         self.hosp=[]  #Stores indices of infected/exposed, hospitalised nodes at any given time step.
         self.qnonsev=[]  #Stores indices of infected/exposed, quarantined non-severe nodes at any given time step.
         
+        self.nonsevcrt=[] #Stores indices of infected non-severe nodes that are slated to become severe somewhere down the line.
+        
         self.susceptible= list(self.SmWorldGr)
         print("Roger")
-        print(self.susceptible[2211:2231])
+        print(self.susceptible[10:36])
         #Updates various empty lists initialised above.
         
         for n in self.infektion:
@@ -661,30 +832,46 @@ class COVID_19_Basic():
     def rates(self): #Assigns various transmission and clinical rates to patients. 
         
         self.incubation= math.log(2)/5.2        # Median incubation period of 5.2 days to symptom onset. (Kucharski et al)
-        self.infectious= math.log(2)/2.9        # Median time of infectiousness (2.9 days) post symptom onset (Kucharski et al)
-        self.lab_detection= 1.0/5.0     # 5 days after symptom onset. (WHO Report). Also serves as time taken to hospitalise a patient post symptom onset.
+        self.infectious= math.log(2)/6.5       
+        # Median time of infectiousness (2.9 days) post symptom onset (Kucharski et al)
+        # Imperial College data from the 16th of March assumes 
+        self.lab_detection= 1.0/5.0     
+        # 5 days after symptom onset. (WHO Report). Also serves as time taken to hospitalise a patient post symptom onset.
         
         self.p_sev=0.19         #Percentage of severe cases (WHO Report).
-        self.p_asymp=0.03       # Percentage that remain asymptomatic throughout the course of their disease. (ECDC Report)
+        self.p_asymp=0.33       # Percentage that remain asymptomatic/mild throughout the course of their disease. (ECDC Report)
         
         
-        self.recoverymild= 1.0/14.0  # 14 days from symptom onset to recovery in mild cases. (WHO Report)
+        self.recoverymild= 1.0/14.0  # 14 days from symptom onset to recovery in mild/asymptomati cases. (WHO Report)
         self.recoverysev= 1.0/28.6       #Post-hospitalisation recovery time. (WHO Report)
         self.hospbeds= (0.55*self.n)/1000
         #India has 0.55 hosital beds per thousand of the population.
         
-        self.R0= 3.0 #Probability of transmission per edge between infected and suspectible persons 
+        self.R0= 2.4 #Probability of transmission per edge between infected and suspectible persons 
         ''' Reproduction Rate =Beta/Gamma =3.0 (Kucharski et al)
         Gamma (Mean Recovery Rate)= 1/(0.19*28.6+ 0.81*14)'''
         
-        self.p= self.R0/(self.k*(math.log(2)/self.infectious))
-        #Probability of transmission per infected person per contact per unit time
+        self.p= self.R0/(self.k*(math.log(2)/self.infectious)*(self.p_asymp + 2*(1-self.p_asymp)))
         
-        self.int_caseload=1 #Initial number of infections (at t=0)
+        #Probability of transmission per infected person (asymptomatic) per contact per unit time.
+        #Probablitiy of transmission for 'NS' (Moderate) & 'S' (Severe) cases assumed to be twice that of asymptomatic.
+        
+        #print("Boka:\t %f" )
+        
+        self.int_caseload=2 #Initial number of infections (at t=0)
         
         self.p_critical=0.3         # 30% of severe cases turn critical
         self.death_hos_crt=0.5      # 50% chance critical patients will die will hopitalised.
         self.death_qs_crt=1         # 100% chance non-hospitalised critical care patients die.
+        
+        self.p_ns_s= 0.4
+        
+        '''Percentage of people who turn severe from moderate condition (from total moderate pool). Based on the WHO-China Joint Mission data,
+           which claims 10% of all moderate cases end up in death. Assuming that 30% of all severe cases turn critical
+           and that 80% of such critical cases overall end in death, we end at a figure of 40% severe cases turning critical'''
+           
+        self.conversion= math.log(2)/5.0
+        # ASSUMPTION: MEDIAN OF 5.O DAYS FOR NS CASE TO CONVERT TO S.
         
         
 obj=COVID_19_Basic()
