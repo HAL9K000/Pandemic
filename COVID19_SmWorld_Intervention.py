@@ -256,7 +256,7 @@ class COVID_19_Int(COVID_19_Basic):
             
             for n in self.foreigner:
                 
-                if( typo[n]== "QNS" or typo[n]== "QS" or typo[n]== "H"):
+                if(typo[n]== "QNS" or typo[n]== "QS" or typo[n]== "H"):
                     
                     
                     if((t - t_typo[n][0])==1):
