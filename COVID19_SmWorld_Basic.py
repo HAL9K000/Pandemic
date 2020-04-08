@@ -17,15 +17,15 @@ class COVID_19_Basic():
     
     def __init__(self):
         
-        p=0.008 #Probability of rewiring each edge
-        self.k=8 #Number of closest neighbours per node
-        self.n=50 #Number of nodes in the small world graph to begin with
+        p=0.1 #Probability of rewiring each edge
+        self.k=18 #Number of closest neighbours per node
+        self.n=10000 #Number of nodes in the small world graph to begin with
         self.SmWorldGr= nex.watts_strogatz_graph(self.n, self.k, p)
         #Created Small World Graph.
         #self.attributes()
         self.rates() #Assigns various transmission and clinical rates to patients.
         
-        self.time= 60 #Stores the number of days for which the simulation is carried out.
+        self.time= 400 #Stores the number of days for which the simulation is carried out.
         
         self.sus_size=[]
         self.exp_size=[]
@@ -38,6 +38,8 @@ class COVID_19_Basic():
         self.hosp_size=[]
         self.qsev_size=[]
         self.qnonsev_size=[]
+        
+        self.str="Trial X"
         
         print("Hello")
         
@@ -152,21 +154,19 @@ class COVID_19_Basic():
                 p=2*self.p
                 '''ASSUMPTION: SEVERE CASES ARE TWICE AS CONTAGIOUS'''
                 if(typo[n]== 'S'):
-                    print("Hey Jude")
+                    print("")
             
             if( typo[n]=='H'):
-                p=0.5*p
+                p=0.5*self.p
                 '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN HOSPITALISED, TRANSMISSION RATE DROPS TO 25% 
-                of it's value'''
+                of it's value (0.25*2*self.p = 0.5*self.p)'''
                 print("The Great Game")
                 
             elif( typo[n]=='QS' or typo[n]=='QNS'):
-                #p=1*p
-                '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN IN QUARANTINE, TRANSMISSION RATE DROPS TO 50% 
-                of it's value'''
-                print("The Absurd Show")
-                if typo[n]=='QS':
-                    print("Come Together")
+                p=0.9*self.p
+                '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN IN QUARANTINE, TRANSMISSION RATE DROPS TO 40% 
+                of it's value  (0.5*2*self.p= self.p)'''
+                #print("The Absurd Show")
                 
             
                 
@@ -178,7 +178,7 @@ class COVID_19_Basic():
                         #Susceptible individual has become exposed.
                         self.SmWorldGr.nodes[r]['state']='E'
                         self.SmWorldGr.nodes[r]['t_SEIR']=(t, ran.random())
-                        print("Susceptible Transformation to exposed %d\t%f" %(self.SmWorldGr.nodes[r]['t_SEIR']))
+                        #print("Susceptible Transformation to exposed %d\t%f" %(self.SmWorldGr.nodes[r]['t_SEIR']))
                         self.exposed.append(r)
                         
                         new_exp.append(r)
@@ -252,7 +252,7 @@ class COVID_19_Basic():
                     self.SmWorldGr.nodes[n]['transtate']= 'NT'
                     self.SmWorldGr.nodes[n]['t_trans']= (t, 0)
                     #Chronicles absolute time (day) at which node attained it's current transmission status
-                    print("Lensmart:\t Inf %d\t Cont %d" %(len(self.infektion), len(self.trans)))
+                    #print("Lensmart:\t Inf %d\t Cont %d" %(len(self.infektion), len(self.trans)))
                     self.trans.remove(n)
                     print("Walmart:\t Inf %d\t Cont %d" %(len(self.infektion), len(self.trans)))
                     tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')
@@ -262,14 +262,14 @@ class COVID_19_Basic():
                         print(" Asymptomatic Stoad\t:%d" %(t_typo[n][0]))
                         print(" Asymptomatic Time Transition\t:%d\t%f" %(t_trans[n]))
                         print(" Asymptomatic Transition\t:%s %s" %(tstate[n], n))
-                    elif(typo[n]=='NS'):
+                    '''elif(typo[n]=='NS'):
                         print(" Non Sev Stoad\t:%d" %(t_typo[n][0]))
                         print(" Non Sev Time Transition\t:%d\t%f" %(t_trans[n]))
                         print(" Non Sev Transition\t:%s %s" %(tstate[n], n))
                     elif(typo[n]=='S'):
                         print(" Severe Stoad\t:%d" %(t_typo[n][0]))
                         print(" Severe Time Transition\t:%d\t%f" %(t_trans[n]))
-                        print(" Severe Transition\t:%s %s" %(tstate[n], n))
+                        print(" Severe Transition\t:%s %s" %(tstate[n], n))'''
                         
                         
                         
@@ -283,12 +283,14 @@ class COVID_19_Basic():
                 if( typo[n]== 'NS'):
                     # Person hasn't been diagnosed yet.
                     self.SmWorldGr.nodes[n]['type']='S'
+                    print("Rashid")
                     
                 elif (typo[n]==  'QNS'):
                     #Person was diagnosed and was in self-isolation when it turned  severe.
                     self.SmWorldGr.nodes[n]['type']='QS'
                     self.qnonsev.remove(n)      # Removed from list of quarantined non-severe persons.
                     self.qsev.append(n)         #Added to list of quarantined severe persons.
+                    print("Ibn Batuta")
                 
                 self.SmWorldGr.nodes[n]['t_type']= (t, ran.random())
                 self.sev.append(n)      #Person added to list of severe cases.
@@ -353,14 +355,18 @@ class COVID_19_Basic():
         
         
         for n in self.qnonsev:
-            print("Baloo")
-            print(typo[n])
+            if( state[n] != 'I' ):
+                #If person is not infectious yet, they cannot recover.
+                print("Roger Wabbit")
+                continue
+            #print("Baloo")
+            #print(typo[n])
             ch=t_typo[n][1]
             if( ch> math.exp(-self.recoverymild*(t- t_SEIR[n][0]))):
                 #Takes a mean of fourteen days from the onset of the symptoms for a person to recover.
                 if(len(t_typo[n])==3):
                     # If these NS individuals are slated to go rogue. but have somehow reached the end of their convalescence.
-                    print("Deitrus")
+                    #print("Deitrus")
                     continue
 
                 #Recovered patient can no longer be transmitting/non-transmitting
@@ -396,6 +402,12 @@ class COVID_19_Basic():
         
                 
         for n in self.sev:
+            
+            if( state[n] != 'I' ):
+                '''If person is not infectious yet, they cannot recover. This can specifically occur in the context of "S" patients who have 
+                been detected by contact testing while in their Exposed state and packed off to "QS"'''
+                #print("Woger Dabbit")
+                continue
             
             if typo[n]=='H':
                 #Hospitalised patient.
@@ -547,7 +559,7 @@ class COVID_19_Basic():
         print("Number of severe cases:\t%d" %(len(self.sev)))
         print("Number of severe quarantined cases:\t%d" %(len(self.qsev)))
         
-        self.ouputgraph(t)
+        #self.ouputgraph(t)
         
         
     def ouputgraph(self, t):
@@ -574,14 +586,14 @@ class COVID_19_Basic():
         os.chdir("Results")
         #Changing directory
 
-        if(os.path.isdir("Basic")==False):
-            os.mkdir("Basic")
-        os.chdir("Basic")
+        if(os.path.isdir("Inter")==False):
+            os.mkdir("Inter")
+        os.chdir("Inter")
         #Changing directory
 
-        if(os.path.isdir("Trial III")==False):
-            os.mkdir("Trial III")
-        os.chdir("Trial III")
+        if(os.path.isdir("%s" %(self.str))==False):
+            os.mkdir("%s" %(self.str))
+        os.chdir("%s" %(self.str))
         
         #Log making
         
@@ -645,14 +657,14 @@ class COVID_19_Basic():
         os.chdir("Results")
         #Changing directory
         
-        if(os.path.isdir("Basic")==False):
-            os.mkdir("Basic")
-        os.chdir("Basic")
+        if(os.path.isdir("Inter")==False):
+            os.mkdir("Inter")
+        os.chdir("Inter")
         #Changing directory
 
-        if(os.path.isdir("Trial III")==False):
-            os.mkdir("Trial III")
-        os.chdir("Trial III")
+        if(os.path.isdir("%s" %(self.str))==False):
+            os.mkdir("%s" %(self.str))
+        os.chdir("%s" %(self.str))
         
         #Log making
         
@@ -746,6 +758,7 @@ class COVID_19_Basic():
             ch=ran.random()
             self.SmWorldGr.nodes[n]['state']= 'S' #The whole population is initially susceptible.
             self.SmWorldGr.nodes[n]['t_SEIR']= (0,ch) #Chronicles absolute time (day) at which node attained it's current SEIRD status
+            self.SmWorldGr.nodes[n]['source']= 'L' #The whole population is initially comprised of local nodes
         
         self.starterpack= ran.choices(L, k = self.int_caseload) #Returns the indices of the intiall cases at time t=0
         
@@ -795,6 +808,8 @@ class COVID_19_Basic():
         self.exposed=[]         #Stores indices of exposed nodes at any given time step.
         self.recovered=[]       #Stores indices of recovered nodes at any given time step.
         self.dead=[]            #Stores indices of putrefying nodes at any given time step.
+        
+        self.foreigner=[]       # Register of foreign citizens, which  doesn't discriminate.
         
         '''Counts of stages of transmission'''
         
