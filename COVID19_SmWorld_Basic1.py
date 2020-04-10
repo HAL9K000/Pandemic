@@ -59,7 +59,7 @@ class COVID_19_Basic():
 
 
         self.verbose_time = 0.1
-        self.str="dedug"
+        self.str="dedug_updated_methods"
         self.log_file = 'debug_log.txt'
         with open(self.log_file, 'w') as l:
             pass
@@ -127,6 +127,7 @@ class COVID_19_Basic():
     def gillespie_time_evolution(self):
         counter = 0
         init = 0
+        pbar = tqdm.tqdm(total=self.time)
         s=e=i=r=0
         while self.clock <= self.time:
             self.state=nex.get_node_attributes(self.SmWorldGr, 'state')
@@ -156,7 +157,7 @@ class COVID_19_Basic():
             if self.clock > self.verbose_time*counter:
                 #print(self.clock)
                 #
-                print("Est. Simulation Time : {} hours".format((((time.time()-init)/(60*60))*(self.time-self.clock))/self.verbose_time))
+                #print("Est. Simulation Time : {} hours".format((((time.time()-init)/(60*60))*(self.time-self.clock))/self.verbose_time))
                 init = time.time()
                 log = """\
                     Time : {} days\n\
@@ -172,10 +173,11 @@ class COVID_19_Basic():
                         self.rec_size[-1],
                         self.dead_size[-1]
                     )
-                print(log)
+                #print(log)
                 self.__reset_memory(0)
                 with open(self.log_file, 'a') as f:
                     f.write(log)
+                pbar.update(self.verbose_time)
                 counter = counter + 1
         print(s,e,i,r)
         self.__reset_memory(1)
@@ -327,9 +329,9 @@ class COVID_19_Basic():
             count_ms=0      #Stores number of non-quarantined/non-hospitalised severe or moderate cases.
             
             ch=t_SEIR[n][1]
-            _r = ran.choice(list(self.SmWorldGr.neighbors(n)))
-            #for r in self.SmWorldGr.neighbors(n):
-            for r in [_r]:
+            #_r = ran.choice(list(self.SmWorldGr.neighbors(n)))
+            #for r in [_r]:
+            for r in self.SmWorldGr.neighbors(n):
               if(tstate[r]=='T'):
                 #Neighbour needs to be transmitting first and foremost.  
                 if (typo[r]== 'S' or typo[r]=='NS'):
@@ -345,18 +347,17 @@ class COVID_19_Basic():
             
             if(beta_net==0):
                 continue
-            #print(beta_net,ch, t_SEIR[n][0]); time.sleep(1)
-            #print(ch, math.exp(beta_net*(t-t_SEIR[n][0]))); time.sleep(1)
-            """
-            (ch > math.exp(beat_net*(t-t_SEIR[n][0]]))) condition is never true for some reason!
-            """
-            if( ch< math.exp(beta_net*(t- t_SEIR[n][0]))):
-                #print("hello")
+            
+            #print("Dhokla")
+            #print(beta_net)
+            #print(math.exp(-beta_net*(t- t_SEIR[n][0])))
+            
+            if( ch> math.exp(-beta_net*(t- t_SEIR[n][0]))):
                 self.SmWorldGr.nodes[n]['state']= 'E'
                 self.SmWorldGr.nodes[n]['t_SEIR']= (t, ran.random())
                 self.exposed.append(n)
                 self.susceptible.remove(n)
-                
+                #print("Santos")
             
             
             
