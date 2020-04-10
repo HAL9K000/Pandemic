@@ -21,15 +21,15 @@ class COVID_19_Basic():
         
         p=0.1 #Probability of rewiring each edge
         self.k=18 #Number of closest neighbours per node
-        self.n=100 #Number of nodes in the small world graph to begin with
+        self.n=1000 #Number of nodes in the small world graph to begin with
         self.SmWorldGr= nex.watts_strogatz_graph(self.n, self.k, p)
         #Created Small World Graph.
         #self.attributes()
         self.rates() #Assigns various transmission and clinical rates to patients.
         
-        self.time= 500 #Stores the number of days for which the simulation is carried out.
+        self.time= 100 #Stores the number of days for which the simulation is carried out.
 
-        self.time_pool = np.random.exponential(10, self.n)
+        self.time_pool = np.random.exponential(1, self.n)
         self.time_steps = []
         self._time_steps = []
         self.clock = 0
@@ -127,45 +127,35 @@ class COVID_19_Basic():
     def gillespie_time_evolution(self):
         counter = 0
         init = 0
+        s=e=i=r=0
         while self.clock <= self.time:
             self.state=nex.get_node_attributes(self.SmWorldGr, 'state')
             self.event_node = self.time_pool.argmin()
             event = self.state[self.event_node]
             #print("Event node: {}".format(event_node))
             if event == 'S':
-                #print("Event {}".format(event))
-                #self.trans = [self.event_node]
-                #self.susceptible=[self.event_node]
                 self.susceptible_updater(self.clock)
-                #self.stat_gen(self.clock)
+                s=s+1
             elif event == 'E':
-                #print("Event {}".format(event))
-                #self.exposed = [self.event_node]
+                e=e+1
                 self.exposed_updater(self.clock)
-                #self.stat_gen(self.clock)
             elif event == 'I':
-                #print("Event {}".format(event))
-                #self.trans = [self.event_node]
-                #print(self.trans)
-                #print("Goober")
-                #print(self.event_node)
+                i=i+1
                 self.infected_updater(self.clock)
-                #self.stat_gen(self.clock)
             else:
-                #print("Event {}".format(event))
+                r=r+1
                 pass
-
             self.stat_gen(self.clock)
             #print(self.state[event_node])
             self.clock = self.clock + self.time_pool[self.event_node]
             self.time_pool = self.time_pool - self.time_pool[self.event_node]
-            self.time_pool[self.event_node] = np.random.exponential(10, 1)[0]
+            self.time_pool[self.event_node] = np.random.exponential(1, 1)[0]
             self.time_steps.append(self.clock)
             #print(self.clock)
             #verbose_time = 1
             if self.clock > self.verbose_time*counter:
                 #print(self.clock)
-                #self.__reset_memory(0)
+                #
                 print("Est. Simulation Time : {} hours".format((((time.time()-init)/(60*60))*(self.time-self.clock))/self.verbose_time))
                 init = time.time()
                 log = """\
@@ -187,6 +177,7 @@ class COVID_19_Basic():
                 with open(self.log_file, 'a') as f:
                     f.write(log)
                 counter = counter + 1
+        print(s,e,i,r)
         self.__reset_memory(1)
 
 
@@ -336,8 +327,9 @@ class COVID_19_Basic():
             count_ms=0      #Stores number of non-quarantined/non-hospitalised severe or moderate cases.
             
             ch=t_SEIR[n][1]
-            
-            for r in self.SmWorldGr.neighbors(n):
+            _r = ran.choice(list(self.SmWorldGr.neighbors(n)))
+            #for r in self.SmWorldGr.neighbors(n):
+            for r in [_r]:
               if(tstate[r]=='T'):
                 #Neighbour needs to be transmitting first and foremost.  
                 if (typo[r]== 'S' or typo[r]=='NS'):
@@ -353,8 +345,13 @@ class COVID_19_Basic():
             
             if(beta_net==0):
                 continue
-            
-            if( ch> math.exp(beta_net*(t- t_SEIR[n][0]))):
+            #print(beta_net,ch, t_SEIR[n][0]); time.sleep(1)
+            #print(ch, math.exp(beta_net*(t-t_SEIR[n][0]))); time.sleep(1)
+            """
+            (ch > math.exp(beat_net*(t-t_SEIR[n][0]]))) condition is never true for some reason!
+            """
+            if( ch< math.exp(beta_net*(t- t_SEIR[n][0]))):
+                #print("hello")
                 self.SmWorldGr.nodes[n]['state']= 'E'
                 self.SmWorldGr.nodes[n]['t_SEIR']= (t, ran.random())
                 self.exposed.append(n)
@@ -383,7 +380,7 @@ class COVID_19_Basic():
         #print("Staid")
         #print(self.event_node)
         _n = self.event_node
-        print("Grey")
+        #print("Grey")
         #for n in self.trans:
         for n in [_n]:
             if( state[n] != 'I'):
@@ -425,7 +422,8 @@ class COVID_19_Basic():
         #for n in self.nonsevcrt:
         _k = [_n] if _n in self.nonsevcrt else []
         for n in _k:
-            ch=t_typo[n][2]
+            #ch=t_typo[n][2]
+            ch = t_typo[n][1]
             if (ch> math.exp(-self.gamma_h*(t-t_SEIR[n][0]))):
                 # Takes a median of 5.0 days for a non-severe case to turn severe.
                 
