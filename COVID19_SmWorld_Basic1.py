@@ -13,6 +13,7 @@ import random as ran
 import math
 import time
 import copy
+import tqdm
 
 class COVID_19_Basic():
     
@@ -20,13 +21,13 @@ class COVID_19_Basic():
         
         p=0.1 #Probability of rewiring each edge
         self.k=18 #Number of closest neighbours per node
-        self.n=10000 #Number of nodes in the small world graph to begin with
+        self.n=100 #Number of nodes in the small world graph to begin with
         self.SmWorldGr= nex.watts_strogatz_graph(self.n, self.k, p)
         #Created Small World Graph.
         #self.attributes()
         self.rates() #Assigns various transmission and clinical rates to patients.
         
-        self.time= 150 #Stores the number of days for which the simulation is carried out.
+        self.time= 500 #Stores the number of days for which the simulation is carried out.
 
         self.time_pool = np.random.exponential(10, self.n)
         self.time_steps = []
@@ -128,26 +129,26 @@ class COVID_19_Basic():
         init = 0
         while self.clock <= self.time:
             self.state=nex.get_node_attributes(self.SmWorldGr, 'state')
-            event_node = self.time_pool.argmin()
-            event = self.state[event_node]
+            self.event_node = self.time_pool.argmin()
+            event = self.state[self.event_node]
             #print("Event node: {}".format(event_node))
             if event == 'S':
                 #print("Event {}".format(event))
-                #self.trans = [event_node]
-                self.susceptible=[event_node]
+                #self.trans = [self.event_node]
+                #self.susceptible=[self.event_node]
                 self.susceptible_updater(self.clock)
                 #self.stat_gen(self.clock)
             elif event == 'E':
                 #print("Event {}".format(event))
-                self.exposed = [event_node]
+                #self.exposed = [self.event_node]
                 self.exposed_updater(self.clock)
                 #self.stat_gen(self.clock)
             elif event == 'I':
                 #print("Event {}".format(event))
-                self.trans = [event_node]
-                print(self.trans)
-                print("Goober")
-                print(event_node)
+                #self.trans = [self.event_node]
+                #print(self.trans)
+                #print("Goober")
+                #print(self.event_node)
                 self.infected_updater(self.clock)
                 #self.stat_gen(self.clock)
             else:
@@ -156,9 +157,9 @@ class COVID_19_Basic():
 
             self.stat_gen(self.clock)
             #print(self.state[event_node])
-            self.clock = self.clock + self.time_pool[event_node]
-            self.time_pool = self.time_pool - self.time_pool[event_node]
-            self.time_pool[event_node] = np.random.exponential(10, 1)[0]
+            self.clock = self.clock + self.time_pool[self.event_node]
+            self.time_pool = self.time_pool - self.time_pool[self.event_node]
+            self.time_pool[self.event_node] = np.random.exponential(10, 1)[0]
             self.time_steps.append(self.clock)
             #print(self.clock)
             #verbose_time = 1
@@ -249,8 +250,9 @@ class COVID_19_Basic():
         t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
         
         '''ASSUMTION: Individual only becomes transmitting (contagious) after onset of symptoms (I)'''
-        
-        for n in self.exposed:
+        _n = self.event_node
+        #for n in self.exposed:
+        for n in [_n]:
             ch=t_SEIR[n][1]
             
             if(typo[n]=='A'):
@@ -323,8 +325,9 @@ class COVID_19_Basic():
         new_exp=[]
         #To keep  track of newly minted "E" nodes in each call of this function
         
-        
-        for n in self.susceptible:
+        _n = self.event_node
+        #for n in self.susceptible:
+        for n in [_n]:
             #print('Hobo')
             beta_net=0;
             count_q= 0 #Stores number of quarantined cases (QS or QNS)
@@ -378,10 +381,11 @@ class COVID_19_Basic():
         
         '''Updating potential T cases to NT based on prob check'''
         #print("Staid")
-        print(self.trans)
-        _n = self.trans[-1]
+        #print(self.event_node)
+        _n = self.event_node
         print("Grey")
-        for n in self.trans:
+        #for n in self.trans:
+        for n in [_n]:
             if( state[n] != 'I'):
                 #If node is not infectious then it can no longer be contagious.
                 self.trans.remove(n)
@@ -843,7 +847,8 @@ class COVID_19_Basic():
         np.savetxt('Pandemic.csv', self.data, delimiter=",", header=hd_txt,comments="#")
                    
         f=open('log_unabridged.txt','w')
-        f.write(" K:\t%d, N:\t%d, Initial Caseload:\t %d, R0:\t%3.2f, p:\t %5.3f" %(self.k, self.n, self.int_caseload, self.R0, self.p))
+        #print(self.beta_a)
+        f.write(" K:\t%d, N:\t%d, Initial Caseload:\t %d, R0:\t%3.2f, p:\t %5.3f" %(self.k, self.n, self.int_caseload, self.R0, self.beta_a))
         
                    
         os.chdir("../")
