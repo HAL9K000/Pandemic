@@ -11,7 +11,9 @@ import matplotlib.pyplot as plt
 import os
 import random as ran
 import math
+import time
 import copy
+import tqdm
 
 class COVID_19_Basic():
     
@@ -25,7 +27,12 @@ class COVID_19_Basic():
         #self.attributes()
         self.rates() #Assigns various transmission and clinical rates to patients.
         
-        self.time= 400 #Stores the number of days for which the simulation is carried out.
+        self.time= 500 #Stores the number of days for which the simulation is carried out.
+
+        self.time_pool = np.random.exponential(10, self.n)
+        self.time_steps = []
+        self._time_steps = []
+        self.clock = 0
         
         self.sus_size=[]
         self.exp_size=[]
@@ -38,13 +45,29 @@ class COVID_19_Basic():
         self.hosp_size=[]
         self.qsev_size=[]
         self.qnonsev_size=[]
+
+        self._sus_size=[]
+        self._exp_size=[]
+        self._inf_size=[]
+        self._trans_size=[]
+        self._rec_size=[]
+        self._dead_size=[]
+        self._sev_size=[]
+        self._hosp_size=[]
+        self._qsev_size=[]
+        self._qnonsev_size=[]
+
+
+        self.verbose_time = 1
+        self.str="dedug2"
+        self.log_file = 'debug_log.txt'
+        with open(self.log_file, 'w') as l:
+            pass
         
-        self.str="Trial X"
+        #print("Hello")
         
-        print("Hello")
-        
-        for n in range(1,10):
-            print(ran.random())
+        #for n in range(1,10):
+            #print(ran.random())
         
         
     def controlpanel(self):
@@ -61,10 +84,25 @@ class COVID_19_Basic():
         for t in range(0, self.time):
             #continue
             self.time_evolution(t)
-            print("Hashim")
+            state=nex.get_node_attributes(self.SmWorldGr, 'state')
+            print(set(state.values()))
+            #print("Hashim")
         
         self.statistics()
         #Time to crunch the final numbers
+
+    def controlpanel2(self):
+        t_SEIR=nex.get_node_attributes(self.SmWorldGr, 't_SEIR') #Time at wich node last updated it's SEIR value.
+        t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')
+        state=nex.get_node_attributes(self.SmWorldGr, 'state')
+        tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')
+        typo=nex.get_node_attributes(self.SmWorldGr, 'type')
+        t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
+
+        self.node_edge_annotation()
+
+        self.gillespie_time_evolution()
+        self.statistics()
             
     
     def time_evolution(self, t):   #At each time point, responsible for updating the SEIR and related attributes of the nodes.
@@ -85,10 +123,128 @@ class COVID_19_Basic():
         self.susceptible_updater(t)
         
         self.stat_gen(t)         #Compiling data for statistics'''
+
+    def gillespie_time_evolution(self):
+        counter = 0
+        init = 0
+        pbar = tqdm.tqdm(total=self.time)
+        while self.clock <= self.time:
+            self.state=nex.get_node_attributes(self.SmWorldGr, 'state')
+            self.event_node = self.time_pool.argmin()
+            event = self.state[self.event_node]
+            #print("Event node: {}".format(self.event_node))
+            if event == 'S':
+                #print("Event {}".format(event))
+                #self.trans = [self.event_node]
+                self.susceptible_updater(self.clock)
+                #self.stat_gen(self.clock)
+            elif event == 'E':
+                #print("Event {}".format(event))
+                #self.exposed = [self.event_node]
+                self.exposed_updater(self.clock)
+                #self.stat_gen(self.clock)
+            elif event == 'I':
+                #print("Event {}".format(event))
+                #self.trans = [self.event_node]
+                self.infected_updater(self.clock)
+                #self.stat_gen(self.clock)
+            else:
+                #print("Event {}".format(event))
+                pass
+
+            #self.stat_gen(self.clock)
+            #print(self.state[self.event_node])
+            self.clock = self.clock + self.time_pool[self.event_node]
+            self.time_pool = self.time_pool - self.time_pool[self.event_node]
+            self.time_pool[self.event_node] = np.random.exponential(10, 1)[0]
+
+            #self.time_steps.append(self.clock)
+
+            #print(self.clock)
+            #verbose_time = 1
+            if self.clock > self.verbose_time*counter:
+                #print(len(self.trans))
+                #print(self.clock)
+                self.stat_gen(self.clock)
+                self.time_steps.append(self.clock)
+                #print("Est. Simulation Time : {} hours".format((((time.time()-init)/(60*60))*(self.time-self.clock))/self.verbose_time))
+                init = time.time()
+                log = """\
+                    Time : {} days\n\
+                    Susceptible : {}\n\
+                    Infected : {}\n\
+                    Exposed : {}\n\
+                    Recovered : {}\n\
+                    Dead : {}\n\n\n""".format(
+                        round(self.clock,2), 
+                        self.sus_size[-1], 
+                        self.inf_size[-1],
+                        self.exp_size[-1],
+                        self.rec_size[-1],
+                        self.dead_size[-1]
+                    )
+                #print(log)
+                #pbar.update((self.verbose_time/self.time)*100)
+                #pbar.set_description(log)
+                #self.__reset_memory(0)
+                with open(self.log_file, 'a') as f:
+                    f.write(log)
+                pbar.update(self.verbose_time)
+                counter = counter + 1
+        #self.__reset_memory(1)
+
+
+    def __reset_memory(self, s):
+        """
+        Gillespie time evolution methods results in lot of iterations, so for large simulations,
+        as the size of the arrays storing the variables increase, the simulation time goes on 
+        increasing, so at intervals, either store the data to file, or clear it.
+
+        this method stores the state if the sustem when called into different array
+        when passed 0
+        """
+        if s == 0:
+            if len(self.sus_size): self._sus_size.append(self.sus_size[-1])
+            if len(self.exp_size): self._exp_size.append(self.exp_size[-1])
+            if len(self.inf_size): self._inf_size.append(self.inf_size[-1])
+            if len(self.trans_size): self._trans_size.append(self.trans_size[-1])
+            if len(self.rec_size): self._rec_size.append(self.rec_size[-1])
+            if len(self.dead_size): self._dead_size.append(self.dead_size[-1])
+            if len(self.sev_size): self._sev_size.append(self.sev_size[-1])
+            if len(self.hosp_size): self._hosp_size.append(self.hosp_size[-1])
+            if len(self.qsev_size): self._qsev_size.append(self.qsev_size[-1])
+            if len(self.qnonsev_size): self._qnonsev_size.append(self.qnonsev_size[-1])
+            if len(self.time_steps): self._time_steps.append(self.time_steps[-1])
+
+            self.sus_size=[]
+            self.exp_size=[]
+            self.inf_size=[]
+            self.trans_size=[]
+            self.rec_size=[]
+            self.dead_size=[]
+            self.sev_size=[]
+            self.hosp_size=[]
+            self.qsev_size=[]
+            self.qnonsev_size=[]
+            self.time_steps = []
+        else:
+            self.sus_size=self._sus_size
+            self.exp_size=self._exp_size
+            self.inf_size=self._inf_size
+            self.trans_size=self._trans_size
+            self.rec_size=self._rec_size
+            self.dead_size=self._dead_size
+            self.sev_size=self._sev_size
+            self.hosp_size=self._hosp_size
+            self.qsev_size=self._qsev_size
+            self.qnonsev_size=self._qnonsev_size
+            self.time_steps = self._time_steps
+
+
         
         
     def exposed_updater(self,t):
-        print("Genda")
+        #print("Genda")
         
         t_SEIR=nex.get_node_attributes(self.SmWorldGr, 't_SEIR') #Time at wich node last updated it's SEIR value.
         t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')
@@ -98,12 +254,14 @@ class COVID_19_Basic():
         t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
         
         '''ASSUMTION: Individual only becomes transmitting (contagious) after onset of symptoms (I)'''
-        
-        for n in self.exposed:
+        _n = self.event_node
+        #for n in self.exposed:
+        for n in [_n]:
             ch=t_SEIR[n][1]
             
             if(typo[n]=='A'):
-                    print(" Asymptomatic Stoad\t:%d" %(t_typo[n][0]))
+                pass
+                    #print(" Asymptomatic Stoad\t:%d" %(t_typo[n][0]))
             
             #print("Toad:\t%d" %(t_SEIR[n][0]))
             #print("Noad:\t %f" %(t_SEIR[n][1]))
@@ -118,7 +276,7 @@ class COVID_19_Basic():
                 
                 self.infektion.append(n)
                 self.trans.append(n)
-                self.exposed.remove(n)
+                if n in self.exposed: self.exposed.remove(n)
                 
                 tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')
                 t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')
@@ -141,8 +299,8 @@ class COVID_19_Basic():
         
         new_exp=[]
         #To keep  track of newly minted "E" nodes in each call of this function
-        
-        for n in self.trans:
+        _n = self.event_node
+        for n in [_n]:
             
             #state=nex.get_node_attributes(self.SmWorldGr, 'state')
             #Needed to ensure that state variable is updated and that r belongs only to 'S' & not some 'E'
@@ -150,17 +308,19 @@ class COVID_19_Basic():
             
             
             p=self.p
+            #print(typo[n])
             if( typo[n]== 'S' or typo[n]== 'NS'):
                 p=2*self.p
                 '''ASSUMPTION: SEVERE CASES ARE TWICE AS CONTAGIOUS'''
                 if(typo[n]== 'S'):
-                    print("")
+                    pass
+                    #print("")
             
             if( typo[n]=='H'):
                 p=0.5*self.p
                 '''ASSUMPTION: IF PATIENT IS STILL CONTAGIOUS WHEN HOSPITALISED, TRANSMISSION RATE DROPS TO 25% 
                 of it's value (0.25*2*self.p = 0.5*self.p)'''
-                print("The Great Game")
+                #print("The Great Game")
                 
             elif( typo[n]=='QS' or typo[n]=='QNS'):
                 p=0.9*self.p
@@ -169,7 +329,6 @@ class COVID_19_Basic():
                 #print("The Absurd Show")
                 
             
-                
             for r in self.SmWorldGr.neighbors(n):
                 if state[r]=='S' and r not in new_exp:
                     #If a neighbour is susceptible and that neighbor hasn't already tranformed to an 'E' node
@@ -183,9 +342,10 @@ class COVID_19_Basic():
                         
                         new_exp.append(r)
                         
-                        print(len(self.susceptible))
+                        #print(len(self.susceptible))
                         if r not in self.susceptible:
-                            print("Eureka")
+                            pass
+                            #print("Eureka")
                             #print(state[r])
                             #print(r)
                         self.susceptible.remove(r)
@@ -220,7 +380,7 @@ class COVID_19_Basic():
                                 will end up in a 'S' case'''
                             
                             
-                            print("Soja")
+                            #print("Soja")
                         
             
         
@@ -237,8 +397,9 @@ class COVID_19_Basic():
         t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
         
         '''Updating potential T cases to NT based on prob check'''
-        
-        for n in self.trans:
+        #_n = self.trans[-1]
+        _n = self.event_node
+        for n in [_n]:
             if( state[n] != 'I'):
                 #If node is not infectious then it can no longer be contagious.
                 self.trans.remove(n)
@@ -254,14 +415,15 @@ class COVID_19_Basic():
                     #Chronicles absolute time (day) at which node attained it's current transmission status
                     #print("Lensmart:\t Inf %d\t Cont %d" %(len(self.infektion), len(self.trans)))
                     self.trans.remove(n)
-                    print("Walmart:\t Inf %d\t Cont %d" %(len(self.infektion), len(self.trans)))
+                    #print("Walmart:\t Inf %d\t Cont %d" %(len(self.infektion), len(self.trans)))
                     tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')
                     t_trans=nex.get_node_attributes(self.SmWorldGr, 't_trans')
                 
                     if(typo[n]=='A'):
-                        print(" Asymptomatic Stoad\t:%d" %(t_typo[n][0]))
-                        print(" Asymptomatic Time Transition\t:%d\t%f" %(t_trans[n]))
-                        print(" Asymptomatic Transition\t:%s %s" %(tstate[n], n))
+                        pass
+                        #print(" Asymptomatic Stoad\t:%d" %(t_typo[n][0]))
+                        #print(" Asymptomatic Time Transition\t:%d\t%f" %(t_trans[n]))
+                        #print(" Asymptomatic Transition\t:%s %s" %(tstate[n], n))
                     '''elif(typo[n]=='NS'):
                         print(" Non Sev Stoad\t:%d" %(t_typo[n][0]))
                         print(" Non Sev Time Transition\t:%d\t%f" %(t_trans[n]))
@@ -274,8 +436,9 @@ class COVID_19_Basic():
                         
                         
         '''Checking if NS persons slated to turn critical get moved up to QS or S, dependinng on circumstances'''
-        
-        for n in self.nonsevcrt:
+        #for n in self.nonsevcrt:
+        _k = [_n] if _n in self.nonsevcrt else []
+        for n in _k:
             ch=t_typo[n][2]
             if (ch> math.exp(-self.conversion*(t-t_SEIR[n][0]))):
                 # Takes a median of 5.0 days for a non-severe case to turn severe.
@@ -283,14 +446,14 @@ class COVID_19_Basic():
                 if( typo[n]== 'NS'):
                     # Person hasn't been diagnosed yet.
                     self.SmWorldGr.nodes[n]['type']='S'
-                    print("Rashid")
+                    #print("Rashid")
                     
                 elif (typo[n]==  'QNS'):
                     #Person was diagnosed and was in self-isolation when it turned  severe.
                     self.SmWorldGr.nodes[n]['type']='QS'
                     self.qnonsev.remove(n)      # Removed from list of quarantined non-severe persons.
                     self.qsev.append(n)         #Added to list of quarantined severe persons.
-                    print("Ibn Batuta")
+                    #print("Ibn Batuta")
                 
                 self.SmWorldGr.nodes[n]['t_type']= (t, ran.random())
                 self.sev.append(n)      #Person added to list of severe cases.
@@ -303,9 +466,9 @@ class COVID_19_Basic():
             
         '''Checking if a particular infectious has gotten back positive diagnostic for COVID-19
         & is hospitalised/quarantined as the case may be'''
-        
-        for n in self.infektion:
-            
+        #for n in self.infektion:
+        _k = [_n] if _n in self.infektion else []
+        for n in _k:
             if (typo[n]== "S" or typo[n]== "NS"):
                 ch=t_SEIR[n][1]
                 if( ch> math.exp(-self.lab_detection*(t- t_SEIR[n][0]))):
@@ -353,11 +516,12 @@ class COVID_19_Basic():
         '''
         
         
-        
-        for n in self.qnonsev:
+        #for n in self.qnonsev:
+        _k = [_n] if _n in self.qnonsev else []
+        for n in _k:
             if( state[n] != 'I' ):
                 #If person is not infectious yet, they cannot recover.
-                print("Roger Wabbit")
+                #print("Roger Wabbit")
                 continue
             #print("Baloo")
             #print(typo[n])
@@ -372,7 +536,7 @@ class COVID_19_Basic():
                 #Recovered patient can no longer be transmitting/non-transmitting
                 if(tstate[n]== 'T'):
                     self.SmWorldGr.nodes[n]['t_trans']= (t,0)
-                    self.trans.remove(n)
+                    if n in self.trans: self.trans.remove(n)
                     #Removing from transmitter list
                 
                 self.SmWorldGr.nodes[n]['transtate']= ''
@@ -399,10 +563,10 @@ class COVID_19_Basic():
         tstate=nex.get_node_attributes(self.SmWorldGr, 'transtate')
         typo=nex.get_node_attributes(self.SmWorldGr, 'type')
         t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
-        
-                
-        for n in self.sev:
-            
+           
+        #for n in self.sev:
+        _k = [_n] if _n in self.sev else []
+        for n in _k:
             if( state[n] != 'I' ):
                 '''If person is not infectious yet, they cannot recover. This can specifically occur in the context of "S" patients who have 
                 been detected by contact testing while in their Exposed state and packed off to "QS"'''
@@ -429,7 +593,7 @@ class COVID_19_Basic():
                     #Recovered patient can no longer be transmitting/non-transmitting
                     if(tstate[n]== 'T'):
                         self.SmWorldGr.nodes[n]['t_trans']= (t,0)
-                        self.trans.remove(n)
+                        if n in self.trans: self.trans.remove(n)
                         #Removing from transmitter list
                 
                     self.SmWorldGr.nodes[n]['transtate']= ''
@@ -471,7 +635,7 @@ class COVID_19_Basic():
                     #Recovered patient can no longer be transmitting/non-transmitting
                     if(tstate[n]== 'T'):
                         self.SmWorldGr.nodes[n]['t_trans']= (t,0)
-                        self.trans.remove(n)
+                        if n in self.trans: self.trans.remove(n)
                         #Removing from transmitter list
                 
                     self.SmWorldGr.nodes[n]['transtate']= ''
@@ -497,8 +661,9 @@ class COVID_19_Basic():
         typo=nex.get_node_attributes(self.SmWorldGr, 'type')
         t_typo=nex.get_node_attributes(self.SmWorldGr, 't_type')
 
-        for n in self.asymp:
-            
+        #for n in self.asymp:
+        _k = [_n] if _n in self.asymp else []
+        for n in _k:
             if( state[n] != 'I' ):
                 #If person is not infectious yet, they cannot recover.
                 continue
@@ -508,19 +673,19 @@ class COVID_19_Basic():
             if( ch> math.exp(-self.recoverymild*(t- t_SEIR[n][0]))):
                 #Takes a mean of fourteen days from the onset of the symptoms for an asymptomatic to recover. (ASSUMPTION)
                 
-                print("Asymptototic: %s" %(n))
-                print("Asympt t_type: %d\t%f" %(t_typo[n]))
-                print("Asympt typo: %s" %(typo[n]))
-                print("Asympt t_SEIR: %d\t%f" %(t_SEIR[n]))
-                print("Asympt SEIR State: %s" %(state[n]))
-                print("Asympt t_trans: %d\t%f" %(t_trans[n]))
-                print("Asympt transtate: %d\t%f" %(t_trans[n]))
+                #print("Asymptototic: %s" %(n))
+                #print("Asympt t_type: %d\t%f" %(t_typo[n]))
+                #print("Asympt typo: %s" %(typo[n]))
+                #print("Asympt t_SEIR: %d\t%f" %(t_SEIR[n]))
+                #print("Asympt SEIR State: %s" %(state[n]))
+                #print("Asympt t_trans: %d\t%f" %(t_trans[n]))
+                #print("Asympt transtate: %d\t%f" %(t_trans[n]))
                 
                 
                 #Recovered patient can no longer be transmitting/non-transmitting
                 if(tstate[n]== 'T'):
                     self.SmWorldGr.nodes[n]['t_trans']= (t,0)
-                    self.trans.remove(n)
+                    if n in self.trans: self.trans.remove(n)
                     #Removing from transmitter list
                 
                 self.SmWorldGr.nodes[n]['transtate']= ''
@@ -549,7 +714,8 @@ class COVID_19_Basic():
         self.hosp_size.append(len(self.hosp))
         self.qsev_size.append(len(self.qsev))
         self.qnonsev_size.append(len(self.qnonsev))
-        
+
+        """
         print("Number of susceptible persons:\t%d" %(len(self.susceptible)))
         print("Number of exposed persons:\t%d" %(len(self.exposed)))
         print("Number of infected persons:\t%d" %(len(self.infektion)))
@@ -558,6 +724,7 @@ class COVID_19_Basic():
         
         print("Number of severe cases:\t%d" %(len(self.sev)))
         print("Number of severe quarantined cases:\t%d" %(len(self.qsev)))
+        """
         
         #self.ouputgraph(t)
         
@@ -672,10 +839,10 @@ class COVID_19_Basic():
             os.mkdir("Logs")
         os.chdir("Logs")
         
-        tseries= np.array(list(range(0,self.time)))
-        self.data= np.zeros([self.time, 11])
+        #tseries= np.array(list(range(0,self.time)))
+        self.data= np.zeros([len(self.time_steps), 11])
         
-        self.data[:,0] = tseries
+        self.data[:,0] = self.time_steps
         self.data[:,1] = sus_size
         self.data[:,2] = exp_size
         self.data[:,3] = inf_size
@@ -709,7 +876,7 @@ class COVID_19_Basic():
         for x in range(1,7):
             #Plotting basic SEIRD data.
             
-            plt.plot(self.data[:,0], self.data[0:,x],  marker='o', markerfacecolor='none', 
+            plt.plot(self.data[:,0], self.data[0:,x],  marker='.', markerfacecolor='none', 
                      label="%s" %(labels[x]))
         plt.xlabel("Time")
         plt.ylabel("Current Individual Count")
@@ -723,7 +890,7 @@ class COVID_19_Basic():
         
         for x in range(6,10):
             
-            plt.plot(self.data[:,0], self.data[0:,x],  marker='o', markerfacecolor='none', 
+            plt.plot(self.data[:,0], self.data[0:,x],  marker='.', markerfacecolor='none', 
                      label="%s" %(labels[x]))
         plt.xlabel("Time")
         plt.ylabel("Current Individual Count")
@@ -753,6 +920,8 @@ class COVID_19_Basic():
         "QNS"- Self-Quarantined (Non-Severe Cases)
         '''
         
+        nex.set_node_attributes(self.SmWorldGr, 'UNASSIGNED', 'type')
+
         L= list(self.SmWorldGr) #List of nodes
         for n in L:
             ch=ran.random()
@@ -799,7 +968,7 @@ class COVID_19_Basic():
                 if(state[r]=="S"): #If neighbors are susceptible.
                     self.SmWorldGr[n][r]== "s"
                     
-        print("Bokaro")
+        #print("Bokaro")
         
         '''Setting up various trackers'''
 
@@ -829,12 +998,12 @@ class COVID_19_Basic():
         self.nonsevcrt=[] #Stores indices of infected non-severe nodes that are slated to become severe somewhere down the line.
         
         self.susceptible= list(self.SmWorldGr)
-        print("Roger")
-        print(self.susceptible[10:36])
+        #print("Roger")
+        #print(self.susceptible[10:36])
         #Updates various empty lists initialised above.
         
         for n in self.infektion:
-            self.susceptible.remove(n)
+            if n in self.susceptible: self.susceptible.remove(n)
             # At t=0, all nodes are either infectious or susceptible
             if typo[n]=='A':
                 self.asymp.append(n)
@@ -893,8 +1062,4 @@ obj=COVID_19_Basic()
 
 if __name__ == '__main__':
     obj.controlpanel()
-        
-        
-        
-        
         

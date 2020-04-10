@@ -1,1 +1,0 @@
- K:	18, N:	10000, Initial Caseload:	 2, R0:	4.80, p:	 0.025

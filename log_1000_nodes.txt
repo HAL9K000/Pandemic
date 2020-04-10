@@ -1,0 +1,808 @@
+                    Time : 0.0 days
+                    Susceptible : 998
+                    Infected : 2
+                    Exposed : 0
+                    Recovered : 0
+                    Dead : 0
+
+
+                    Time : 1.0 days
+                    Susceptible : 812
+                    Infected : 9
+                    Exposed : 2
+                    Recovered : 0
+                    Dead : 0
+
+
+                    Time : 2.0 days
+                    Susceptible : 683
+                    Infected : 23
+                    Exposed : 2
+                    Recovered : 1
+                    Dead : 0
+
+
+                    Time : 3.0 days
+                    Susceptible : 598
+                    Infected : 50
+                    Exposed : 1
+                    Recovered : 1
+                    Dead : 0
+
+
+                    Time : 4.0 days
+                    Susceptible : 528
+                    Infected : 92
+                    Exposed : 1
+                    Recovered : 3
+                    Dead : 0
+
+
+                    Time : 5.0 days
+                    Susceptible : 473
+                    Infected : 123
+                    Exposed : 1
+                    Recovered : 6
+                    Dead : 0
+
+
+                    Time : 6.0 days
+                    Susceptible : 429
+                    Infected : 168
+                    Exposed : 1
+                    Recovered : 16
+                    Dead : 0
+
+
+                    Time : 7.0 days
+                    Susceptible : 391
+                    Infected : 212
+                    Exposed : 1
+                    Recovered : 22
+                    Dead : 0
+
+
+                    Time : 8.0 days
+                    Susceptible : 359
+                    Infected : 259
+                    Exposed : 1
+                    Recovered : 28
+                    Dead : 0
+
+
+                    Time : 9.0 days
+                    Susceptible : 338
+                    Infected : 287
+                    Exposed : 1
+                    Recovered : 39
+                    Dead : 0
+
+
+                    Time : 10.0 days
+                    Susceptible : 322
+                    Infected : 317
+                    Exposed : 1
+                    Recovered : 52
+                    Dead : 0
+
+
+                    Time : 11.0 days
+                    Susceptible : 304
+                    Infected : 330
+                    Exposed : 1
+                    Recovered : 70
+                    Dead : 1
+
+
+                    Time : 12.0 days
+                    Susceptible : 287
+                    Infected : 351
+                    Exposed : 0
+                    Recovered : 87
+                    Dead : 2
+
+
+                    Time : 13.0 days
+                    Susceptible : 267
+                    Infected : 365
+                    Exposed : 1
+                    Recovered : 100
+                    Dead : 2
+
+
+                    Time : 14.0 days
+                    Susceptible : 255
+                    Infected : 391
+                    Exposed : 1
+                    Recovered : 113
+                    Dead : 2
+
+
+                    Time : 15.0 days
+                    Susceptible : 244
+                    Infected : 401
+                    Exposed : 1
+                    Recovered : 131
+                    Dead : 3
+
+
+                    Time : 16.0 days
+                    Susceptible : 232
+                    Infected : 424
+                    Exposed : 1
+                    Recovered : 142
+                    Dead : 5
+
+
+                    Time : 17.0 days
+                    Susceptible : 217
+                    Infected : 435
+                    Exposed : 1
+                    Recovered : 160
+                    Dead : 5
+
+
+                    Time : 18.0 days
+                    Susceptible : 210
+                    Infected : 428
+                    Exposed : 1
+                    Recovered : 182
+                    Dead : 7
+
+
+                    Time : 19.0 days
+                    Susceptible : 201
+                    Infected : 433
+                    Exposed : 0
+                    Recovered : 203
+                    Dead : 7
+
+
+                    Time : 20.0 days
+                    Susceptible : 193
+                    Infected : 434
+                    Exposed : 2
+                    Recovered : 224
+                    Dead : 7
+
+
+                    Time : 21.0 days
+                    Susceptible : 189
+                    Infected : 420
+                    Exposed : 1
+                    Recovered : 244
+                    Dead : 10
+
+
+                    Time : 22.0 days
+                    Susceptible : 183
+                    Infected : 420
+                    Exposed : 2
+                    Recovered : 255
+                    Dead : 11
+
+
+                    Time : 23.0 days
+                    Susceptible : 176
+                    Infected : 418
+                    Exposed : 0
+                    Recovered : 269
+                    Dead : 13
+
+
+                    Time : 24.0 days
+                    Susceptible : 171
+                    Infected : 408
+                    Exposed : 1
+                    Recovered : 286
+                    Dead : 19
+
+
+                    Time : 25.0 days
+                    Susceptible : 166
+                    Infected : 409
+                    Exposed : 0
+                    Recovered : 304
+                    Dead : 20
+
+
+                    Time : 26.0 days
+                    Susceptible : 158
+                    Infected : 406
+                    Exposed : 1
+                    Recovered : 319
+                    Dead : 21
+
+
+                    Time : 27.0 days
+                    Susceptible : 156
+                    Infected : 385
+                    Exposed : 1
+                    Recovered : 344
+                    Dead : 22
+
+
+                    Time : 28.0 days
+                    Susceptible : 154
+                    Infected : 382
+                    Exposed : 1
+                    Recovered : 355
+                    Dead : 24
+
+
+                    Time : 29.0 days
+                    Susceptible : 149
+                    Infected : 377
+                    Exposed : 1
+                    Recovered : 369
+                    Dead : 26
+
+
+                    Time : 30.0 days
+                    Susceptible : 148
+                    Infected : 359
+                    Exposed : 1
+                    Recovered : 391
+                    Dead : 28
+
+
+                    Time : 31.0 days
+                    Susceptible : 145
+                    Infected : 357
+                    Exposed : 1
+                    Recovered : 403
+                    Dead : 29
+
+
+                    Time : 32.0 days
+                    Susceptible : 142
+                    Infected : 355
+                    Exposed : 1
+                    Recovered : 411
+                    Dead : 30
+
+
+                    Time : 33.0 days
+                    Susceptible : 139
+                    Infected : 342
+                    Exposed : 1
+                    Recovered : 427
+                    Dead : 34
+
+
+                    Time : 34.0 days
+                    Susceptible : 137
+                    Infected : 328
+                    Exposed : 1
+                    Recovered : 444
+                    Dead : 36
+
+
+                    Time : 35.0 days
+                    Susceptible : 134
+                    Infected : 316
+                    Exposed : 1
+                    Recovered : 458
+                    Dead : 40
+
+
+                    Time : 36.0 days
+                    Susceptible : 129
+                    Infected : 301
+                    Exposed : 1
+                    Recovered : 477
+                    Dead : 40
+
+
+                    Time : 37.0 days
+                    Susceptible : 127
+                    Infected : 295
+                    Exposed : 1
+                    Recovered : 482
+                    Dead : 43
+
+
+                    Time : 38.0 days
+                    Susceptible : 125
+                    Infected : 300
+                    Exposed : 0
+                    Recovered : 492
+                    Dead : 44
+
+
+                    Time : 39.0 days
+                    Susceptible : 121
+                    Infected : 294
+                    Exposed : 1
+                    Recovered : 502
+                    Dead : 45
+
+
+                    Time : 40.0 days
+                    Susceptible : 119
+                    Infected : 287
+                    Exposed : 1
+                    Recovered : 516
+                    Dead : 45
+
+
+                    Time : 41.0 days
+                    Susceptible : 118
+                    Infected : 285
+                    Exposed : 1
+                    Recovered : 524
+                    Dead : 46
+
+
+                    Time : 42.0 days
+                    Susceptible : 118
+                    Infected : 275
+                    Exposed : 1
+                    Recovered : 535
+                    Dead : 48
+
+
+                    Time : 43.0 days
+                    Susceptible : 116
+                    Infected : 257
+                    Exposed : 1
+                    Recovered : 551
+                    Dead : 50
+
+
+                    Time : 44.0 days
+                    Susceptible : 114
+                    Infected : 251
+                    Exposed : 1
+                    Recovered : 555
+                    Dead : 54
+
+
+                    Time : 45.0 days
+                    Susceptible : 114
+                    Infected : 239
+                    Exposed : 1
+                    Recovered : 567
+                    Dead : 55
+
+
+                    Time : 46.0 days
+                    Susceptible : 114
+                    Infected : 231
+                    Exposed : 1
+                    Recovered : 577
+                    Dead : 58
+
+
+                    Time : 47.0 days
+                    Susceptible : 114
+                    Infected : 223
+                    Exposed : 0
+                    Recovered : 586
+                    Dead : 60
+
+
+                    Time : 48.0 days
+                    Susceptible : 113
+                    Infected : 221
+                    Exposed : 2
+                    Recovered : 588
+                    Dead : 61
+
+
+                    Time : 49.0 days
+                    Susceptible : 112
+                    Infected : 213
+                    Exposed : 1
+                    Recovered : 596
+                    Dead : 62
+
+
+                    Time : 50.0 days
+                    Susceptible : 108
+                    Infected : 203
+                    Exposed : 1
+                    Recovered : 608
+                    Dead : 63
+
+
+                    Time : 51.0 days
+                    Susceptible : 108
+                    Infected : 196
+                    Exposed : 1
+                    Recovered : 615
+                    Dead : 65
+
+
+                    Time : 52.0 days
+                    Susceptible : 107
+                    Infected : 190
+                    Exposed : 2
+                    Recovered : 622
+                    Dead : 66
+
+
+                    Time : 53.0 days
+                    Susceptible : 107
+                    Infected : 188
+                    Exposed : 1
+                    Recovered : 624
+                    Dead : 67
+
+
+                    Time : 54.0 days
+                    Susceptible : 107
+                    Infected : 185
+                    Exposed : 0
+                    Recovered : 629
+                    Dead : 67
+
+
+                    Time : 55.0 days
+                    Susceptible : 106
+                    Infected : 176
+                    Exposed : 2
+                    Recovered : 637
+                    Dead : 70
+
+
+                    Time : 56.0 days
+                    Susceptible : 106
+                    Infected : 169
+                    Exposed : 1
+                    Recovered : 645
+                    Dead : 71
+
+
+                    Time : 57.0 days
+                    Susceptible : 105
+                    Infected : 166
+                    Exposed : 1
+                    Recovered : 647
+                    Dead : 72
+
+
+                    Time : 58.0 days
+                    Susceptible : 104
+                    Infected : 158
+                    Exposed : 1
+                    Recovered : 655
+                    Dead : 73
+
+
+                    Time : 59.0 days
+                    Susceptible : 101
+                    Infected : 156
+                    Exposed : 1
+                    Recovered : 658
+                    Dead : 74
+
+
+                    Time : 60.0 days
+                    Susceptible : 101
+                    Infected : 147
+                    Exposed : 1
+                    Recovered : 667
+                    Dead : 75
+
+
+                    Time : 61.0 days
+                    Susceptible : 101
+                    Infected : 137
+                    Exposed : 1
+                    Recovered : 673
+                    Dead : 80
+
+
+                    Time : 62.0 days
+                    Susceptible : 101
+                    Infected : 135
+                    Exposed : 0
+                    Recovered : 674
+                    Dead : 83
+
+
+                    Time : 63.0 days
+                    Susceptible : 100
+                    Infected : 132
+                    Exposed : 0
+                    Recovered : 681
+                    Dead : 83
+
+
+                    Time : 64.0 days
+                    Susceptible : 99
+                    Infected : 126
+                    Exposed : 1
+                    Recovered : 687
+                    Dead : 84
+
+
+                    Time : 65.0 days
+                    Susceptible : 99
+                    Infected : 120
+                    Exposed : 1
+                    Recovered : 694
+                    Dead : 84
+
+
+                    Time : 66.0 days
+                    Susceptible : 98
+                    Infected : 115
+                    Exposed : 1
+                    Recovered : 701
+                    Dead : 84
+
+
+                    Time : 67.0 days
+                    Susceptible : 95
+                    Infected : 113
+                    Exposed : 1
+                    Recovered : 704
+                    Dead : 84
+
+
+                    Time : 68.0 days
+                    Susceptible : 95
+                    Infected : 106
+                    Exposed : 1
+                    Recovered : 710
+                    Dead : 86
+
+
+                    Time : 69.0 days
+                    Susceptible : 93
+                    Infected : 103
+                    Exposed : 3
+                    Recovered : 711
+                    Dead : 88
+
+
+                    Time : 70.0 days
+                    Susceptible : 93
+                    Infected : 99
+                    Exposed : 1
+                    Recovered : 714
+                    Dead : 89
+
+
+                    Time : 71.0 days
+                    Susceptible : 91
+                    Infected : 97
+                    Exposed : 1
+                    Recovered : 717
+                    Dead : 89
+
+
+                    Time : 72.0 days
+                    Susceptible : 89
+                    Infected : 93
+                    Exposed : 0
+                    Recovered : 722
+                    Dead : 90
+
+
+                    Time : 73.0 days
+                    Susceptible : 89
+                    Infected : 88
+                    Exposed : 1
+                    Recovered : 727
+                    Dead : 90
+
+
+                    Time : 74.0 days
+                    Susceptible : 88
+                    Infected : 84
+                    Exposed : 1
+                    Recovered : 732
+                    Dead : 90
+
+
+                    Time : 75.0 days
+                    Susceptible : 88
+                    Infected : 81
+                    Exposed : 1
+                    Recovered : 735
+                    Dead : 90
+
+
+                    Time : 76.0 days
+                    Susceptible : 88
+                    Infected : 77
+                    Exposed : 1
+                    Recovered : 736
+                    Dead : 94
+
+
+                    Time : 77.0 days
+                    Susceptible : 87
+                    Infected : 77
+                    Exposed : 1
+                    Recovered : 736
+                    Dead : 94
+
+
+                    Time : 78.0 days
+                    Susceptible : 86
+                    Infected : 72
+                    Exposed : 1
+                    Recovered : 739
+                    Dead : 96
+
+
+                    Time : 79.0 days
+                    Susceptible : 86
+                    Infected : 68
+                    Exposed : 1
+                    Recovered : 742
+                    Dead : 97
+
+
+                    Time : 80.0 days
+                    Susceptible : 86
+                    Infected : 64
+                    Exposed : 1
+                    Recovered : 746
+                    Dead : 97
+
+
+                    Time : 81.0 days
+                    Susceptible : 86
+                    Infected : 61
+                    Exposed : 1
+                    Recovered : 750
+                    Dead : 98
+
+
+                    Time : 82.0 days
+                    Susceptible : 86
+                    Infected : 59
+                    Exposed : 1
+                    Recovered : 753
+                    Dead : 98
+
+
+                    Time : 83.0 days
+                    Susceptible : 85
+                    Infected : 56
+                    Exposed : 0
+                    Recovered : 755
+                    Dead : 101
+
+
+                    Time : 84.0 days
+                    Susceptible : 85
+                    Infected : 52
+                    Exposed : 0
+                    Recovered : 758
+                    Dead : 102
+
+
+                    Time : 85.0 days
+                    Susceptible : 83
+                    Infected : 50
+                    Exposed : 1
+                    Recovered : 760
+                    Dead : 103
+
+
+                    Time : 86.0 days
+                    Susceptible : 81
+                    Infected : 49
+                    Exposed : 1
+                    Recovered : 761
+                    Dead : 104
+
+
+                    Time : 87.0 days
+                    Susceptible : 81
+                    Infected : 48
+                    Exposed : 1
+                    Recovered : 761
+                    Dead : 105
+
+
+                    Time : 88.0 days
+                    Susceptible : 81
+                    Infected : 46
+                    Exposed : 1
+                    Recovered : 763
+                    Dead : 105
+
+
+                    Time : 89.0 days
+                    Susceptible : 81
+                    Infected : 44
+                    Exposed : 0
+                    Recovered : 767
+                    Dead : 105
+
+
+                    Time : 90.0 days
+                    Susceptible : 81
+                    Infected : 42
+                    Exposed : 0
+                    Recovered : 770
+                    Dead : 105
+
+
+                    Time : 91.0 days
+                    Susceptible : 81
+                    Infected : 41
+                    Exposed : 1
+                    Recovered : 771
+                    Dead : 105
+
+
+                    Time : 92.0 days
+                    Susceptible : 81
+                    Infected : 39
+                    Exposed : 0
+                    Recovered : 774
+                    Dead : 105
+
+
+                    Time : 93.0 days
+                    Susceptible : 80
+                    Infected : 39
+                    Exposed : 1
+                    Recovered : 774
+                    Dead : 105
+
+
+                    Time : 94.0 days
+                    Susceptible : 80
+                    Infected : 36
+                    Exposed : 1
+                    Recovered : 776
+                    Dead : 106
+
+
+                    Time : 95.0 days
+                    Susceptible : 80
+                    Infected : 35
+                    Exposed : 1
+                    Recovered : 776
+                    Dead : 107
+
+
+                    Time : 96.0 days
+                    Susceptible : 80
+                    Infected : 31
+                    Exposed : 1
+                    Recovered : 780
+                    Dead : 107
+
+
+                    Time : 97.0 days
+                    Susceptible : 80
+                    Infected : 30
+                    Exposed : 1
+                    Recovered : 781
+                    Dead : 107
+
+
+                    Time : 98.0 days
+                    Susceptible : 80
+                    Infected : 30
+                    Exposed : 1
+                    Recovered : 781
+                    Dead : 107
+
+
+                    Time : 99.0 days
+                    Susceptible : 80
+                    Infected : 30
+                    Exposed : 1
+                    Recovered : 781
+                    Dead : 107
+
+
+                    Time : 100.0 days
+                    Susceptible : 80
+                    Infected : 31
+                    Exposed : 0
+                    Recovered : 781
+                    Dead : 107
+
+
