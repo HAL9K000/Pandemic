@@ -21,7 +21,7 @@ class COVID_19_Basic():
         
         p=0.1 #Probability of rewiring each edge
         self.k=18 #Number of closest neighbours per node
-        self.n=1000 #Number of nodes in the small world graph to begin with
+        self.n=100 #Number of nodes in the small world graph to begin with
         self.SmWorldGr= nex.watts_strogatz_graph(self.n, self.k, p)
         #Created Small World Graph.
         #self.attributes()
@@ -59,7 +59,7 @@ class COVID_19_Basic():
 
 
         self.verbose_time = 0.1
-        self.str="dedug"
+        self.str="dedug_updated_methods"
         self.log_file = 'debug_log.txt'
         with open(self.log_file, 'w') as l:
             pass
@@ -127,7 +127,7 @@ class COVID_19_Basic():
     def gillespie_time_evolution(self):
         counter = 0
         init = 0
-        s=e=i=r=0
+        pbar = tqdm.tqdm(total=self.time)
         while self.clock <= self.time:
             self.state=nex.get_node_attributes(self.SmWorldGr, 'state')
             self.event_node = self.time_pool.argmin()
@@ -135,28 +135,25 @@ class COVID_19_Basic():
             #print("Event node: {}".format(event_node))
             if event == 'S':
                 self.susceptible_updater(self.clock)
-                s=s+1
             elif event == 'E':
-                e=e+1
                 self.exposed_updater(self.clock)
             elif event == 'I':
-                i=i+1
                 self.infected_updater(self.clock)
             else:
-                r=r+1
                 pass
-            self.stat_gen(self.clock)
+            #self.stat_gen(self.clock)
             #print(self.state[event_node])
             self.clock = self.clock + self.time_pool[self.event_node]
             self.time_pool = self.time_pool - self.time_pool[self.event_node]
             self.time_pool[self.event_node] = np.random.exponential(1, 1)[0]
-            self.time_steps.append(self.clock)
+            #self.time_steps.append(self.clock)
             #print(self.clock)
             #verbose_time = 1
             if self.clock > self.verbose_time*counter:
                 #print(self.clock)
-                #
-                print("Est. Simulation Time : {} hours".format((((time.time()-init)/(60*60))*(self.time-self.clock))/self.verbose_time))
+                self.stat_gen(self.clock)
+                self.time_steps.append(self.clock)
+                #print("Est. Simulation Time : {} hours".format((((time.time()-init)/(60*60))*(self.time-self.clock))/self.verbose_time))
                 init = time.time()
                 log = """\
                     Time : {} days\n\
@@ -172,13 +169,14 @@ class COVID_19_Basic():
                         self.rec_size[-1],
                         self.dead_size[-1]
                     )
-                print(log)
-                self.__reset_memory(0)
+                #print(log)
+                #self.__reset_memory(0)
                 with open(self.log_file, 'a') as f:
                     f.write(log)
+                pbar.update(self.verbose_time)
                 counter = counter + 1
-        print(s,e,i,r)
-        self.__reset_memory(1)
+        #print(s,e,i,r)
+        #self.__reset_memory(1)
 
 
     def __reset_memory(self, s):
@@ -327,9 +325,9 @@ class COVID_19_Basic():
             count_ms=0      #Stores number of non-quarantined/non-hospitalised severe or moderate cases.
             
             ch=t_SEIR[n][1]
-            _r = ran.choice(list(self.SmWorldGr.neighbors(n)))
-            #for r in self.SmWorldGr.neighbors(n):
-            for r in [_r]:
+            #_r = ran.choice(list(self.SmWorldGr.neighbors(n)))
+            #for r in [_r]:
+            for r in self.SmWorldGr.neighbors(n):
               if(tstate[r]=='T'):
                 #Neighbour needs to be transmitting first and foremost.  
                 if (typo[r]== 'S' or typo[r]=='NS'):
@@ -346,16 +344,16 @@ class COVID_19_Basic():
             if(beta_net==0):
                 continue
             
-            print("Dhokla")
-            print(beta_net)
-            print(math.exp(-beta_net*(t- t_SEIR[n][0])))
+            #print("Dhokla")
+            #print(beta_net)
+            #print(math.exp(-beta_net*(t- t_SEIR[n][0])))
             
             if( ch> math.exp(-beta_net*(t- t_SEIR[n][0]))):
                 self.SmWorldGr.nodes[n]['state']= 'E'
                 self.SmWorldGr.nodes[n]['t_SEIR']= (t, ran.random())
                 self.exposed.append(n)
                 self.susceptible.remove(n)
-                print("Santos")
+                #print("Santos")
             
             
             
