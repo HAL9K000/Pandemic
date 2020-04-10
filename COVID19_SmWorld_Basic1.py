@@ -21,7 +21,7 @@ class COVID_19_Basic():
         
         p=0.1 #Probability of rewiring each edge
         self.k=18 #Number of closest neighbours per node
-        self.n=1000 #Number of nodes in the small world graph to begin with
+        self.n=100 #Number of nodes in the small world graph to begin with
         self.SmWorldGr= nex.watts_strogatz_graph(self.n, self.k, p)
         #Created Small World Graph.
         #self.attributes()
@@ -128,7 +128,6 @@ class COVID_19_Basic():
         counter = 0
         init = 0
         pbar = tqdm.tqdm(total=self.time)
-        s=e=i=r=0
         while self.clock <= self.time:
             self.state=nex.get_node_attributes(self.SmWorldGr, 'state')
             self.event_node = self.time_pool.argmin()
@@ -136,27 +135,24 @@ class COVID_19_Basic():
             #print("Event node: {}".format(event_node))
             if event == 'S':
                 self.susceptible_updater(self.clock)
-                s=s+1
             elif event == 'E':
-                e=e+1
                 self.exposed_updater(self.clock)
             elif event == 'I':
-                i=i+1
                 self.infected_updater(self.clock)
             else:
-                r=r+1
                 pass
-            self.stat_gen(self.clock)
+            #self.stat_gen(self.clock)
             #print(self.state[event_node])
             self.clock = self.clock + self.time_pool[self.event_node]
             self.time_pool = self.time_pool - self.time_pool[self.event_node]
             self.time_pool[self.event_node] = np.random.exponential(1, 1)[0]
-            self.time_steps.append(self.clock)
+            #self.time_steps.append(self.clock)
             #print(self.clock)
             #verbose_time = 1
             if self.clock > self.verbose_time*counter:
                 #print(self.clock)
-                #
+                self.stat_gen(self.clock)
+                self.time_steps.append(self.clock)
                 #print("Est. Simulation Time : {} hours".format((((time.time()-init)/(60*60))*(self.time-self.clock))/self.verbose_time))
                 init = time.time()
                 log = """\
@@ -174,13 +170,13 @@ class COVID_19_Basic():
                         self.dead_size[-1]
                     )
                 #print(log)
-                self.__reset_memory(0)
+                #self.__reset_memory(0)
                 with open(self.log_file, 'a') as f:
                     f.write(log)
                 pbar.update(self.verbose_time)
                 counter = counter + 1
-        print(s,e,i,r)
-        self.__reset_memory(1)
+        #print(s,e,i,r)
+        #self.__reset_memory(1)
 
 
     def __reset_memory(self, s):
