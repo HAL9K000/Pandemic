@@ -1,0 +1,9 @@
+# A Git Ignore File for The Small World Network
+
+Results/
+
+Machine_Readable_Data/fw_*/
+
+*.png
+
+*.csv

@@ -50,7 +50,7 @@ class COVID_19_Int(COVID_19_Basic):
         
         self.cumulative_inf=[]
         
-        self.str="Trial XIII"
+        self.str="Trial XII"
         
     def controlpanel(self):
         
@@ -102,6 +102,7 @@ class COVID_19_Int(COVID_19_Basic):
             
             z1 = round(self.ph1_u[0]*t) - round(self.ph1_u[0]*(t-1))
             # Number of undetected new arrivals added to the network at this time step.
+            
             
             z2=round(self.ph1_d[0]*t) - round(self.ph1_d[0]*(t-1))
             
