@@ -351,12 +351,16 @@ class COVID_19_Basic():
             if(beta_net==0):
                 continue
             
-            if( ch> math.exp(beta_net*(t- t_SEIR[n][0]))):
+            print("Dhokla")
+            print(beta_net)
+            print(math.exp(-beta_net*(t- t_SEIR[n][0])))
+            
+            if( ch> math.exp(-beta_net*(t- t_SEIR[n][0]))):
                 self.SmWorldGr.nodes[n]['state']= 'E'
                 self.SmWorldGr.nodes[n]['t_SEIR']= (t, ran.random())
                 self.exposed.append(n)
                 self.susceptible.remove(n)
-                
+                print("Santos")
             
             
             
