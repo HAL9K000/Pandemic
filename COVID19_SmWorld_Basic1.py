@@ -27,9 +27,9 @@ class COVID_19_Basic():
         #self.attributes()
         self.rates() #Assigns various transmission and clinical rates to patients.
         
-        self.time= 100 #Stores the number of days for which the simulation is carried out.
+        self.time= 500 #Stores the number of days for which the simulation is carried out.
 
-        self.time_pool = np.random.exponential(1, self.n)
+        self.time_pool = np.random.exponential(10, self.n)
         self.time_steps = []
         self._time_steps = []
         self.clock = 0
@@ -59,7 +59,7 @@ class COVID_19_Basic():
 
 
         self.verbose_time = 0.1
-        self.str="dedug_updated_methods"
+        self.str="dedug_updated_methods_100"
         self.log_file = 'debug_log.txt'
         with open(self.log_file, 'w') as l:
             pass
@@ -140,12 +140,14 @@ class COVID_19_Basic():
             elif event == 'I':
                 self.infected_updater(self.clock)
             else:
+                #self.current_rate = ####
                 pass
             #self.stat_gen(self.clock)
             #print(self.state[event_node])
+            rate = self.getRate()
             self.clock = self.clock + self.time_pool[self.event_node]
             self.time_pool = self.time_pool - self.time_pool[self.event_node]
-            self.time_pool[self.event_node] = np.random.exponential(1, 1)[0]
+            self.time_pool[self.event_node] = np.random.exponential((1/self.current_rate), 1)[0]
             #self.time_steps.append(self.clock)
             #print(self.clock)
             #verbose_time = 1
@@ -178,6 +180,15 @@ class COVID_19_Basic():
         #print(s,e,i,r)
         #self.__reset_memory(1)
 
+    def getRate(self):
+        if self.SmWorldGr.nodes[self.event_node]['state'] == "R" or self.SmWorldGr.nodes[self.event_node]['state'] == "D":
+            return 1e-15
+        elif <condition>:
+            return <rate>
+        elif <condition>:
+            return <rate>
+        else:
+            return <rate>
 
     def __reset_memory(self, s):
         """
@@ -224,7 +235,6 @@ class COVID_19_Basic():
             self.qsev_size=self._qsev_size
             self.qnonsev_size=self._qnonsev_size
             self.time_steps = self._time_steps
-
 
         
         
@@ -330,14 +340,10 @@ class COVID_19_Basic():
             for r in self.SmWorldGr.neighbors(n):
               if(tstate[r]=='T'):
                 #Neighbour needs to be transmitting first and foremost.  
-                if (typo[r]== 'S' or typo[r]=='NS'):
-                    count_ms+=1
-                elif(typo[r]== 'QS' or typo[r]=='QNS'):
-                    count_q+=1
-                elif(typo[r]== 'H'):
-                    count_h+=1
-                elif(typo[r]== 'A'):
-                    count_a+=1
+                if (typo[r]== 'S' or typo[r]=='NS'): count_ms+=1
+                elif(typo[r]== 'QS' or typo[r]=='QNS'): count_q+=1
+                elif(typo[r]== 'H'): count_h+=1
+                elif(typo[r]== 'A'): count_a+=1
             
             beta_net= count_a*(self.beta_a) + count_ms*(2*self.beta_a) + count_h*(0.5*self.beta_a) + count_q*(0.9*self.beta_a)
             
@@ -913,7 +919,8 @@ class COVID_19_Basic():
             self.SmWorldGr.nodes[n]['source']= 'L' #The whole population is initially comprised of local nodes
         
         self.starterpack= ran.choices(L, k = self.int_caseload) #Returns the indices of the intiall cases at time t=0
-        
+        time_pool_1 = []
+        time_pool_2 = np.random.exponential((1/self.R0), self.n-self.int_caseload)
         for n in self.starterpack:
             
             ch1=ran.random()
@@ -928,12 +935,18 @@ class COVID_19_Basic():
             ch= ran.random()
             if ch<=self.p_asymp:        #Individual is classified as aymptomatic
                 self.SmWorldGr.nodes[n]['type']= 'A'
+                time_pool_1.append(np.random.exponential((1/self.p_asymp), 1)[0])
                 
                 #Chronicles absolute time (day) at which node attained it's current clinical type
             elif (ch>self.p_asymp and ch<= (self.p_asymp +self.p_sev)): #Individual will go on to develop a severe case
                 self.SmWorldGr.nodes[n]['type']= 'S'
+                time_pool_1.append(np.random.exponential((1/self.p_sev), 1)[0])
             else:
                 self.SmWorldGr.nodes[n]['type']= 'NS'
+                time_pool_1.append(np.random.exponential((1/self.p_mod), 1)[0])
+
+        self.time_pool = np.concatenate((time_pool_1, time_pool_2))
+        assert len(self.time_pool) == self.n
             
         '''Edge Annotation
            Edges b/w "S" & "T" are tagged suspectible ("s")
@@ -1006,6 +1019,7 @@ class COVID_19_Basic():
         # 5 days after symptom onset. (WHO Report). Also serves as time taken to hospitalise a patient post symptom onset.
         
         self.p_sev=0.19         #Percentage of severe cases (WHO Report).
+        self.p_mod = 0.31
         self.p_asymp=0.5       # Percentage that remain asymptomatic/mild throughout the course of their disease. (ECDC Report)
         
         
